@@ -17,6 +17,9 @@
         .vue {
             color: #42b983;
         }
+        .warning {
+            color: #f66;
+        }
         .unimportant {
             color: #bcbcbc;
         }
@@ -42,6 +45,9 @@
                 <h2><span class="unimportant">目录</span></h2>
                 <ol id="menu">
                     <li>
+                        什么是服务器端渲染
+                    </li>
+                    <li>
                         为什么要服务器端渲染
                     </li>
                     <li>
@@ -55,7 +61,7 @@
             <section>
                 <section>
                     <h2>
-                        为什么要服务器端渲染
+                        1. 什么是服务器端渲染
                     </h2>
                     <p class="unimportant">Server Side Render</p>
                 </section>
@@ -102,6 +108,38 @@
                     <div>
                         <img width="590" height="580" alt="web 1.0" src="./img/5.png" data-lazy-loaded="">
                     </div>
+                </section>
+                <section>
+                    <h6>
+                        <span class="vue">结论</span>
+                    </h6>
+                    <hr>
+                    <p>
+                        服务器端生成静态HTML返回客户端，然后与客户端混合成为可交互的应用程序
+                    </p>
+                </section>
+            </section>
+            <section>
+                <section>
+                    <h2>
+                        2. 为什么要服务器端渲染
+                    </h2>
+                    <p class="unimportant">Why SSR</p>
+                </section>
+                <section>
+                    <h4>前端两个<span class="warning">痛点</span></h4>
+                    <hr>
+                    <ul>
+                        <li>SEO(Search Engine Optimization)</li>
+                        <li>首屏渲染性能</li>
+                    </ul>
+                </section>
+                <section data-markdown>
+                    #### 你是否真的需要SSR
+                    ---
+                    - 服务器端的开发条件限制
+                    - 需要Node的运行环境
+                    - 增加服务器端负载
                 </section>
             </section>
             <section>
