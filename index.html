@@ -123,7 +123,7 @@
                         <span class="vue">结论</span>
                     </h6>
                     <hr>
-                    <p>
+                    <p style="text-align: left">
                         服务器端生成静态HTML返回客户端，然后与客户端混合成为可交互的应用程序
                     </p>
                 </section>
@@ -315,10 +315,10 @@
                         <span class="vue">开始！</span>
                     </h6>
                     <hr>
-                    <p>
+                    <p style="text-align: left">
                         先从<span class="vue">app.js</span>入手，由于vue实例要被服务器端和浏览器同时使用，所以这里只是将vue实例new好暴露出去即可，router和store类似。
                     </p>
-                    <p>
+                    <p style="text-align: left">
                         推荐采取<span class="vue">工厂模式函数</span>的方式。
                     </p>
                 </section>
@@ -427,7 +427,7 @@
                         <span class="vue">数据预取</span>
                     </h6>
                     <hr>
-                    <p>
+                    <p style="text-align: left">
                         开始渲染HTML之前，需要服务器端先把vue实例需要的数据给准备好。vue官方推荐的做法是在需要SSR的组件内暴露一个同名静态方法，这个同名方法在数据预取的过程中被统一调用。
                     </p>
                 </section>
@@ -553,11 +553,11 @@
                         renderer.renderToString(context, (err, html) => {
                             console.log('html:', html)
                             if (err) {
-                            if (err.code === 404) {
-                                res.status(404).end('Page not found')
-                            } else {
-                                res.status(500).end('Internal Server Error')
-                            }
+                                if (err.code === 404) {
+                                    res.status(404).end('Page not found')
+                                } else {
+                                    res.status(500).end('Internal Server Error')
+                                }
                             } else {
                                 res.writeHead(200, {'Content-Type':'text/html;charset=utf-8'})
                                 res.end(html)
