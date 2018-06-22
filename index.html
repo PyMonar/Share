@@ -310,26 +310,261 @@
                         </li>
                     </ul>
                 </section>
-                <section data-transition="concave" data-background="#4d7e65" data-background-transition="zoom">
-                    App
+                <section>
+                    <h6>
+                        <span class="vue">开始！</span>
+                    </h6>
+                    <hr>
+                    <p>
+                        先从<span class="vue">app.js</span>入手，由于vue实例要被服务器端和浏览器同时使用，所以这里只是将vue实例new好暴露出去即可，router和store类似。
+                    </p>
+                    <p>
+                        推荐采取<span class="vue">工厂模式函数</span>的方式。
+                    </p>
                 </section>
-                <section data-transition="concave" data-background="#b5533c" data-background-transition="zoom">
-                    Router
+                <section data-markdown>
+                    #### 路由
+                    ---
+                    ```javascript
+                    import Vue from 'vue'
+                    import Router from 'vue-router'
+                    Vue.use(Router)
+                    export function createRouter () {
+                        return new Router({
+                            mode: 'history',
+                            routes: [
+                                {
+                                    path: '/',
+                                    name: 'Movie',
+                                    component: () => import('../components/Movie.vue')
+                                },
+                                {
+                                    path: '/us',
+                                    name: 'US',
+                                    component: () => import('../components/US.vue')
+                                }
+                            ]
+                        })
+                    }
+                    ```
                 </section>
-                <section data-transition="concave" data-background="#2e65ad" data-background-transition="zoom">
-                    Entry
+                <section data-markdown>
+                    #### 状态管理
+                    ---
+                    ```javascript
+                    import Vue from 'vue'
+                    import Vuex from 'vuex'
+                    import axios from 'axios'
+                    Vue.use(Vuex)
+                    export function createStore() {
+                        return new Vuex.Store({
+                            state: {
+                                // ...
+                            },
+                            actions: {
+                                // ...
+                            },
+                            mutations: {
+                                // ...
+                            }
+                        })
+                    }
+                    ```
+                </section>
+                <section data-markdown>
+                    #### app.js
+                    ---
+                    ```javascript
+                    import Vue from 'vue'
+                    import App from './App.vue'
+                    import { createRouter } from './router'
+                    import { createStore } from './store'
+                    export function createApp () {
+                        const router = createRouter()
+                        const store = createStore()
+                        const app = new Vue({
+                            router,
+                            store,
+                            render: h => h(App)
+                        })
+                        return { app, router, store }
+                    }
+                    ```
                 </section>
                 <section>
-                    数据预取
+                    <h6>
+                        <span class="vue">服务器端打包入口</span>
+                    </h6>
+                    <hr>
+                    <p style="text-align: left">
+                        服务器端打包入口是<span class="vue">entry-server.js</span>文件，服务器端渲染之前的工作要在这个入口文件里边完成。主要做三件事：
+                    </p>
+                    <ol>
+                        <li>获取app.js导出的实例对象</li>
+                        <li>扫描服务端上下文中的url，获取匹配路由的组件</li>
+                        <li>数据预取</li>
+                    </ol>
+                </section>
+                <section data-markdown>
+                    #### 前两步
+                    ---
+                    ```javascript
+                    import { createApp } from './app'
+                    export default context => {
+                        return new Promise((resolve, reject) => {
+                            const { app, router, store } = createApp()
+                            router.push(context.url)    
+                            router.onReady(() => {
+                                const matchedComponents = router.getMatchedComponents()
+                                if (!matchedComponents.length) {
+                                    reject({ code: 404 })
+                                }
+                                // 下边是数据预取
+                    ```
                 </section>
                 <section>
-                    客户端激活
+                    <h6>
+                        <span class="vue">数据预取</span>
+                    </h6>
+                    <hr>
+                    <p>
+                        开始渲染HTML之前，需要服务器端先把vue实例需要的数据给准备好。vue官方推荐的做法是在需要SSR的组件内暴露一个同名静态方法，这个同名方法在数据预取的过程中被统一调用。
+                    </p>
+                </section>
+                <section data-markdown>
+                    #### 带有数据预取方法的组件
+                    ---
+                    ```javascript
+                    // ... 省略html与style
+                    export default {
+                        name: 'Movie',
+                        // 服务器端预取数据
+                        // 由于数据预取还未初始化所以不可以使用this，需要将store传进来
+                        asyncData ({ store }) {
+                            return store.dispatch('FETCH_MOVIES')
+                        },
+                        methods: {
+                            // ...
+                        },
+                        computed: {
+                            // ...
+                        }
+                    }
+                    ```
+                </section>
+                <section data-markdown>
+                    #### 数据预取
+                    ---
+                    ```javascript
+                    // 上接entry-client.js
+                    // 预取数据
+                    Promise.all(matchedComponents.map(Component => {
+                        if (Component.asyncData) {
+                            return Component.asyncData({
+                                store
+                            })
+                        }
+                    })).then(() => {
+                        // 在所有预取钩子(preFetch hook) resolve 后，
+                        // 我们的 store 现在已经填充入渲染应用程序所需的状态。
+                        // 当我们将状态附加到上下文，
+                        // 并且 `template` 选项用于 renderer 时，
+                        // 状态将自动序列化为 `window.__INITIAL_STATE__`，并注入 HTML。
+                        context.state = store.state
+                        resolve(app)
+                    }).catch(err => {
+                        console.log('Get Sync Data Err:', err)
+                    })
+                    ```
                 </section>
                 <section>
-                    Bundle Renderer
+                    <h6>
+                        <span class="vue">客户端打包入口</span>
+                    </h6>
+                    <hr>
+                    <p style="text-align: left">
+                        <span class="vue">entry-client.js</span>的工作很简单，将app.js中的实例直接挂载在DOM上即可，不过在这之前要做一个<span class="vue">Hydate</span>的操作。
+                    </p>
+                </section>
+                <section data-markdown>
+                    #### 客户端激活
+                    ---
+                    ```javascript
+                    import { createApp } from './app'
+                    const { app, router, store } = createApp()
+                    // 如果服务器端渲染过了html，那么就会将服务器端的store状态同步到客户端
+                    if (window.__INITIAL_STATE__) {
+                        store.replaceState(window.__INITIAL_STATE__)
+                    }
+                    // hydate操作
+                    // 服务器渲染后的html会多一个data-server-rendered="true"标记
+                    // 客户端发现这个标记后会尝试激活的方式挂载实例
+                    // 如果客户端生成的虚拟DOM与服务器生成的DOM匹配则挂载成功
+                    // 如果不匹配则丢弃服务器渲染的DOM，进行纯客户端渲染（生产模式跳过）
+                    router.onReady(() => {
+                        app.$mount('#app')
+                    })
+                    ```
                 </section>
                 <section>
-                    Webpack 配置
+                    <h6>
+                        <span class="vue">Webpack配置</span>
+                    </h6>
+                    <hr>
+                    <p style="text-align: left">
+                        客户端打包配置跟普通打包没有不同，服务端打包需要有一些不同，因为打包的bundle要在服务器端使用，需要按照Node风格进行打包处理。
+                    </p>
+                </section>
+                <section>
+                    <h6>
+                        <span class="vue">最后一步：服务器端渲染</span>
+                    </h6>
+                    <hr>
+                    <p style="text-align: left">
+                        使用Express启动服务，首先利用tempalte和服务器端入口打包的bundle初始化渲染器，然后增加渲染的中间件，这样就最终完成了服务器端渲染。
+                    </p>
+                </section>
+                <section data-markdown>
+                    #### 初始化渲染器
+                    ---
+                    ```javascript
+                    const express = require('express')
+                    const app = express()
+                    const path = require('path')
+                    const fs = require('fs')
+                    const resolve = file => path.resolve(__dirname, file)
+                    const bundle = require('./dist/vue-ssr-bundle.json')
+                    const template = fs.readFileSync(resolve('./dist/index.html'), 'utf-8')
+
+                    function createRenderer (bundle, template) {
+                        return require('vue-server-renderer').createBundleRenderer(bundle, {
+                            template
+                        })
+                    }
+                    const renderer = createRenderer(bundle, template)
+                    ```
+                </section>
+                <section data-markdown>
+                    #### 渲染！
+                    ---
+                    ```javascript
+                    app.get('*', (req, res) => {
+                        const context = { url: req.url }
+                        renderer.renderToString(context, (err, html) => {
+                            console.log('html:', html)
+                            if (err) {
+                            if (err.code === 404) {
+                                res.status(404).end('Page not found')
+                            } else {
+                                res.status(500).end('Internal Server Error')
+                            }
+                            } else {
+                                res.writeHead(200, {'Content-Type':'text/html;charset=utf-8'})
+                                res.end(html)
+                            }
+                        })
+                    })
+                    ```
                 </section>
             </section>
             <section>
@@ -338,14 +573,11 @@
                         5. 服务器端渲染 VS 浏览器端渲染
                     </h3>
                 </section>
-                <section>
-                    后续 Nuxt.js
-                </section>
             </section>
             <section>
                 <section>
                     <h2>
-                        谢谢
+                        <span class="vue">谢谢</span>
                     </h2>
                 </section>
             </section>
