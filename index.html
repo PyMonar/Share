@@ -82,7 +82,7 @@
                         2. <span class="vue">Struts MVC</span>
                     </h6>
                     <div>
-                        <img width="541" height="382" alt="web 1.0" src="./img/2.jpeg" data-lazy-loaded="">
+                        <img width="541" height="382" alt="MVC" src="./img/2.jpeg" data-lazy-loaded="">
                     </div>
                 </section>
                 <section>
@@ -90,7 +90,7 @@
                         3. <span class="vue">Web 2.0</span>
                     </h6>
                     <div>
-                        <img width="541" height="382" alt="web 1.0" src="./img/3.jpeg" data-lazy-loaded="">
+                        <img width="541" height="382" alt="web 2.0" src="./img/3.jpeg" data-lazy-loaded="">
                     </div>
                 </section>
                 <section>
@@ -98,7 +98,7 @@
                         4. <span class="vue">Single Page Application</span>
                     </h6>
                     <div>
-                        <img width="541" height="382" alt="web 1.0" src="./img/4.jpeg" data-lazy-loaded="">
+                        <img width="541" height="382" alt="SPA" src="./img/4.jpeg" data-lazy-loaded="">
                     </div>
                 </section>
                 <section>
@@ -106,7 +106,7 @@
                         5. <span class="vue">Full Stack</span>
                     </h6>
                     <div>
-                        <img width="590" height="580" alt="web 1.0" src="./img/5.png" data-lazy-loaded="">
+                        <img width="590" height="580" alt="Full Stack" src="./img/5.png" data-lazy-loaded="">
                     </div>
                 </section>
                 <section>
@@ -145,55 +145,168 @@
             <section>
                 <section>
                     <h2>
-                        个人心得
+                        3. Vue服务器端渲染原理
                     </h2>
                 </section>
-                <section data-transition="concave" data-background="#4d7e65" data-background-transition="zoom">
+                <section>
                     <h6>
-                        1. 技术
+                        <span class="vue">技术栈</span>
+                    </h6>
+                    <hr>
+                    <ul>
+                        <li>Vue + Vue-Router + Vuex</li>
+                        <li>Webpack</li>
+                        <li>Express/Koa</li>
+                    </ul>
+                </section>
+                <section>
+                    <h6>
+                        <span class="vue">构建步骤</span>
+                    </h6>
+                    <div>
+                        <img width="1078" height="453" alt="Vue-SSR" src="./img/vue-ssr.png" data-lazy-loaded="">
+                    </div>
+                </section>
+            </section>
+            <section>
+                <section>
+                    <h2>
+                        4. 实现服务器端渲染
+                    </h2>
+                </section>
+                <section data-markdown>
+                    #### 代码结构
+                    ---
+                    ```
+                    build
+                    ├── webpack.base.config.js
+                    ├── webpack.client.config.js
+                    ├── webpack.server.config.js
+                    src
+                    ├── components
+                    │   ├── Movie.vue
+                    │   └── US.vue
+                    ├── router
+                    │   └── index.js
+                    ├── store
+                    │   └── index.js
+                    ├── App.vue
+                    ├── app.js # 通用 entry
+                    ├── entry-client.js # 仅运行于浏览器
+                    ├── entry-server.js # 仅运行于服务器
+                    index.template.html
+                    server.js
+                    ```
+                </section>
+                <section>
+                    <h6>
+                        <span class="vue">渲染核心</span>
                     </h6>
                     <ul>
+                        <li><span class="vue">vue-server-renderer</span></li>
+                        <li>依赖于Node原生模块</li>
+                        <li>作用：将vue实例渲染为HTML片段</li>
                         <li>
-                            ES6实现简洁，缩短代码量
+                            <code class="warning">createRenderer()</code>
                         </li>
                         <li>
-                            Less的混合(Mix)用法
-                        </li>
-                        <li>
-                            多级数据结构列表的显示
-                        </li>
-                        <li>
-                            原生<a href="https://github.com/PyMonar/practice" target="blank">Knockout</a>深入理解
-                        </li>
-                        <li>
-                            循环引用的处理
-                        </li>
-                        <li>
-                            UUI踩坑
+                            <code class="warning">createBundleRenderer()</code>
                         </li>
                     </ul>
+                </section>
+                <section data-markdown>
+                    ```javascript
+                    // 第 1 步：创建一个 Vue 实例
+                    const Vue = require('vue')
+                    const app = new Vue({
+                        template: `<div>Hello World</div>`
+                    })
+                    
+                    // 第 2 步：创建一个 renderer
+                    const renderer = require('vue-server-renderer').createRenderer()
+                    
+                    // 第 3 步：将 Vue 实例渲染为 HTML
+                    renderer.renderToString(app, (err, html) => {
+                        if (err) throw err
+                        console.log(html)
+                        // => <div data-server-rendered="true">Hello World</div>
+                    })
+                    
+                    // 在 2.5.0+，如果没有传入回调函数，则会返回 Promise：
+                    renderer.renderToString(app).then(html => {
+                        console.log(html)
+                    }).catch(err => {
+                        console.error(err)
+                    })
+                    ```
+                </section>
+                <section data-markdown>
+                    #### 集成服务器
+                    ```javascript
+                    // server.js
+                    const Vue = require('vue')
+                    const server = require('express')()
+                    const renderer = require('vue-server-renderer').createRenderer()
+                    server.get('*', (req, res) => {
+                        const app = new Vue({
+                            template: `From Server`
+                        })
+                        renderer.renderToString(app, (err, html) => {
+                        if (err) {
+                            res.status(500).end('Internal Server Error')
+                            return
+                        }
+                        res.end(html)
+                    })
+                    server.listen(8080)
+                    ```
+                </section>
+                <section data-markdown>
+                    #### 注入模板
+                    ```javascript
+                    const renderer = createRenderer({
+                        template: require('fs').
+                                  readFileSync('./index.template.html', 'utf-8')
+                    })
+                    
+                    renderer.renderToString(app, (err, html) => {
+                        console.log(html) // html 将是注入应用程序内容的完整页面
+                    })
+                    ```
+                </section>
+                <section>
+                    注意！
+                </section>
+                <section data-transition="concave" data-background="#4d7e65" data-background-transition="zoom">
+                    App
                 </section>
                 <section data-transition="concave" data-background="#b5533c" data-background-transition="zoom">
-                    <h6>
-                        2. 缺点与不足
-                    </h6>
-                    <ul>
-                        <li>沟通不够充分</li>
-                        <li>缺乏对考勤业务整体的把握</li>
-                        <li>前端设计思考不够深入</li>
-                    </ul>
+                    Router
                 </section>
                 <section data-transition="concave" data-background="#2e65ad" data-background-transition="zoom">
-                    <h6>
-                        3. 建议
-                    </h6>
-                    <ul>
-                        <li>迭代流程不规范？</li>
-                        <li>缺乏设计/代码评审？</li>
-                        <li>需求性质的BUG提给研发？（需求与测试的沟通）</li>
-                        <li>新交互与视觉总是与原来的标准不符合</li>
-                        <li>文档不规范，没有统一管理</li>
-                    </ul>
+                    Entry
+                </section>
+                <section>
+                    数据预取
+                </section>
+                <section>
+                    客户端激活
+                </section>
+                <section>
+                    Bundle Renderer
+                </section>
+                <section>
+                    Webpack 配置
+                </section>
+            </section>
+            <section>
+                <section>
+                    <h2>
+                        5. 服务器端渲染 VS 浏览器端渲染
+                    </h2>
+                </section>
+                <section>
+                    后续 Nuxt
                 </section>
             </section>
             <section>
