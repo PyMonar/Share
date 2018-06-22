@@ -54,7 +54,7 @@
                         Vue服务器端渲染原理
                     </li>
                     <li>
-                        如何实现服务器端渲染
+                        实现服务器端渲染
                     </li>
                 </ol>
             </section>
@@ -147,6 +147,7 @@
                     <h2>
                         3. Vue服务器端渲染原理
                     </h2>
+                    <p class="unimportant">Vue SSR Principle</p>
                 </section>
                 <section>
                     <h6>
@@ -154,7 +155,7 @@
                     </h6>
                     <hr>
                     <ul>
-                        <li>Vue + Vue-Router + Vuex</li>
+                        <li>Vue + Vue-router + Vuex</li>
                         <li>Webpack</li>
                         <li>Express/Koa</li>
                     </ul>
@@ -173,6 +174,7 @@
                     <h2>
                         4. 实现服务器端渲染
                     </h2>
+                    <p class="unimportant">Vue SSR Implement</p>
                 </section>
                 <section data-markdown>
                     #### 代码结构
@@ -202,19 +204,21 @@
                     <h6>
                         <span class="vue">渲染核心</span>
                     </h6>
+                    <hr>
                     <ul>
                         <li><span class="vue">vue-server-renderer</span></li>
                         <li>依赖于Node原生模块</li>
                         <li>作用：将vue实例渲染为HTML片段</li>
                         <li>
-                            <code class="warning">createRenderer()</code>
+                            <code class="unimportant">createRenderer()</code>
                         </li>
                         <li>
-                            <code class="warning">createBundleRenderer()</code>
+                            <code class="unimportant">createBundleRenderer()</code>
                         </li>
                     </ul>
                 </section>
                 <section data-markdown>
+                    <script type="text/template">
                     ```javascript
                     // 第 1 步：创建一个 Vue 实例
                     const Vue = require('vue')
@@ -239,9 +243,12 @@
                         console.error(err)
                     })
                     ```
+                    </script>
                 </section>
                 <section data-markdown>
+                    <script type="text/template">
                     #### 集成服务器
+                    ---
                     ```javascript
                     // server.js
                     const Vue = require('vue')
@@ -249,7 +256,7 @@
                     const renderer = require('vue-server-renderer').createRenderer()
                     server.get('*', (req, res) => {
                         const app = new Vue({
-                            template: `From Server`
+                            template: `<div>From Server</div>`
                         })
                         renderer.renderToString(app, (err, html) => {
                         if (err) {
@@ -260,9 +267,11 @@
                     })
                     server.listen(8080)
                     ```
+                    </script>
                 </section>
                 <section data-markdown>
                     #### 注入模板
+                    ---
                     ```javascript
                     const renderer = createRenderer({
                         template: require('fs').
@@ -275,7 +284,21 @@
                     ```
                 </section>
                 <section>
-                    注意！
+                    <h6>
+                        <span class="vue">约束条件</span>
+                    </h6>
+                    <hr>
+                    <ul>
+                        <li>
+                            针对每个请求每个vue实例都应该是全新的，避免状态污染
+                        </li>
+                        <li>
+                            vue组件的生命周期钩子只有<code class="vue">beforeCreate</code>和<code class="vue">created</code>在SSR过程中被调用
+                        </li>
+                        <li>
+                            浏览器端独有的变量或者api无效，比如window、document
+                        </li>
+                    </ul>
                 </section>
                 <section data-transition="concave" data-background="#4d7e65" data-background-transition="zoom">
                     App
@@ -306,7 +329,7 @@
                     </h2>
                 </section>
                 <section>
-                    后续 Nuxt
+                    后续 Nuxt.js
                 </section>
             </section>
             <section>
