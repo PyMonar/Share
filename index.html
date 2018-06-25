@@ -120,7 +120,7 @@
                 </section>
                 <section>
                     <h6>
-                        <span class="vue">结论</span>
+                        <span class="vue">简单讲</span>
                     </h6>
                     <hr>
                     <p style="text-align: left">
@@ -269,11 +269,12 @@
                             template: `<div>From Server</div>`
                         })
                         renderer.renderToString(app, (err, html) => {
-                        if (err) {
-                            res.status(500).end('Internal Server Error')
-                            return
-                        }
-                        res.end(html)
+                            if (err) {
+                                res.status(500).end('Internal Server Error')
+                                return
+                            }
+                            res.end(html)
+                        })
                     })
                     server.listen(8080)
                     ```
@@ -572,6 +573,11 @@
                     <h3>
                         5. 服务器端渲染 VS 浏览器端渲染
                     </h3>
+                </section>
+                <section>
+                    <h6>
+                        下一步：<span class="vue">Nuxt.js</span>
+                    </h6>
                 </section>
             </section>
             <section>
